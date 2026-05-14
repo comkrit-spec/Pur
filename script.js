@@ -20,13 +20,16 @@ setupPWA();
 // =======================================================
 // 🔑 CONFIGURATION 
 // =======================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbzBFiYKP2YCwkRtjKJaFtgv1ZqbzfzC7-91yQICAM8O7Tzp59B3eyV2oJ6YTehA6NjPmA/exec"; // 📌 อย่าลืมเปลี่ยนตรงนี้
+const API_URL = "https://script.google.com/macros/s/AKfycbzBFiYKP2YCwkRtjKJaFtgv1ZqbzfzC7-91yQICAM8O7Tzp59B3eyV2oJ6YTehA6NjPmA/exec"; // 📌 อย่าลืมเปลี่ยนตรงนี้เป็นลิงก์จาก Google Apps Script
 const API_KEY = "AH_ProCure_SecureKey_2026"; 
 
 const N = n => Number(n).toLocaleString('th-TH', {minimumFractionDigits:0, maximumFractionDigits:2});
 let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 let prDB = []; let usersDB = [];
 
+// ==========================================
+// CORE SYSTEM FUNCTIONS
+// ==========================================
 async function callAPI(payload, loadingMsg = "กำลังโหลด...") {
   showLoading(loadingMsg); payload.apiKey = API_KEY; 
   try {
@@ -142,12 +145,12 @@ function closeModal() {
 }
 
 function sb(status) {
-  const map = { pending: { l: 'รออนุมัติ', c: 'bg-warning-100 text-warning-600' }, approved: { l: 'อนุมัติแล้ว', c: 'bg-success-100 text-success-700' }, rejected: { l: 'ปฏิเสธ', c: 'bg-danger-100 text-danger-600' }, po_issued: { l: 'ออก PO แล้ว', c: 'bg-primary-100 text-primary-700' }, received: { l: 'รับของแล้ว', c: 'bg-gray-100 text-gray-600' } };
+  const map = { pending: { l: 'รออนุมัติ', c: 'bg-warning-100 text-warning-600' }, approved: { l: 'อนุมัติแล้ว', c: 'bg-success-100 text-success-700' }, rejected: { l: 'ปฏิเสธ', c: 'bg-danger-100 text-danger-600' }, po_issued: { l: 'ออก PO แล้ว', c: 'bg-indigo-100 text-indigo-700' }, received: { l: 'รับของแล้ว', c: 'bg-gray-100 text-gray-600' } };
   const s = map[status] || { l: status, c: 'bg-gray-100 text-gray-600' }; return `<span class="px-2.5 py-1 rounded-full text-[11px] font-medium tracking-wide ${s.c}">${s.l}</span>`;
 }
 
 // ==========================================
-// MOCK DATA 
+// MOCK DATA (สำหรับเฟสที่ยังไม่เชื่อมฐานข้อมูล 100%)
 // ==========================================
 const vendorDB = [{id:'V01', name:'TPG Center Co., Ltd.', score:4.8, cat:'อะไหล่เครื่องจักร', spend:342000, status:'Active'}, {id:'V02', name:'The Inner Line Co., Ltd.', score:4.2, cat:'เครื่องมือวัด', spend:187000, status:'Active'}, {id:'V03', name:'Siam Tech Supply', score:3.5, cat:'วัสดุสิ้นเปลือง', spend:45000, status:'Warning'}];
 const budgetDB = [{dept:'MT', budget:500000, used:380000}, {dept:'IT', budget:300000, used:120000}, {dept:'HR', budget:150000, used:145000}];
@@ -279,31 +282,55 @@ function pageTracking() {
 }
 
 // ----------------------------------------------------
-// ระบบใบสั่งซื้อ (PO) อัปเดตใหม่เชื่อมหลังบ้าน
+// ระบบ PO (สมบูรณ์แล้ว)
 // ----------------------------------------------------
-function processCreatePO() {
-  const checkboxes = document.querySelectorAll('.po-checkbox:checked');
-  const selectedPRs = Array.from(checkboxes).map(cb => cb.value);
-
-  if (selectedPRs.length === 0) {
-    return toast('กรุณาเลือก PR อย่างน้อย 1 รายการ', 'warning');
+function pagePO() { 
+  const approvedPRs = prDB.filter(r => r.status === 'approved');
+  
+  let content = '';
+  if(approvedPRs.length === 0) {
+    content = `
+    <div class="bg-white rounded-2xl p-12 text-center border border-dashed border-gray-200 shadow-sm">
+      <div class="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="ti ti-file-x text-4xl text-indigo-300"></i>
+      </div>
+      <h3 class="text-lg font-bold text-gray-800">ไม่มีรายการพร้อมออก PO</h3>
+      <p class="text-sm text-gray-500 mt-1">ต้องมีใบ PR ที่ผ่านการอนุมัติแล้ว จึงจะสามารถสร้างใบสั่งซื้อได้</p>
+    </div>`;
+  } else {
+    content = `<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+      <p class="text-sm font-medium text-gray-500 mb-4">เลือก PR ที่อนุมัติแล้วเพื่อดำเนินการสร้าง PO</p>
+      <div class="space-y-3 mb-6">
+        ${approvedPRs.map(r => `
+          <label class="flex items-center gap-4 p-4 border border-gray-100 rounded-xl bg-gray-50 hover:bg-indigo-50 hover:border-indigo-200 cursor-pointer transition group">
+            <input type="checkbox" class="po-checkbox w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500" value="${r.id}">
+            <div class="flex-1">
+              <div class="flex justify-between">
+                <span class="font-bold text-indigo-700 group-hover:text-indigo-800">${r.id}</span>
+                <span class="font-bold text-gray-800">฿${N(r.total)}</span>
+              </div>
+              <div class="text-sm text-gray-600 mt-1">${r.items[0].name} ${r.items.length > 1 ? `(+${r.items.length - 1} รายการ)` : ''} | <span class="text-xs text-gray-400">แผนก: ${r.dept}</span></div>
+            </div>
+          </label>
+        `).join('')}
+      </div>
+      <button onclick="processCreatePO()" class="w-full bg-indigo-600 text-white font-medium rounded-xl py-3 shadow-md hover:bg-indigo-700 transition flex items-center justify-center gap-2">
+        <i class="ti ti-file-export"></i> สร้างเอกสาร PO
+      </button>
+    </div>`;
   }
 
-  showConfirm('สร้างใบสั่งซื้อ (PO)?', `ระบบจะนำ PR จำนวน ${selectedPRs.length} รายการไปสร้างเป็นเอกสาร PO ใหม่`, 'primary', async () => {
-    const res = await callAPI({ action: 'createPO', prIds: selectedPRs }, "กำลังสร้างใบสั่งซื้อ...");
-    
-    if (res.status === 'success') {
-      toast(res.message, 'success');
-      // ซิงค์ข้อมูลล่าสุดจากเซิร์ฟเวอร์
-      const ref = await callAPI({ action: 'getData' }, "อัปเดตข้อมูล...");
-      if (ref.status === 'success') {
-        prDB = ref.prs || [];
-        go('po'); // รีเฟรชหน้าเพื่ออัปเดตรายการที่หายไป
-      }
-    } else {
-      toast(res.message, 'error');
-    }
-  });
+  return `
+  <div class="animate-slide-up space-y-6">
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-lg p-6 text-white flex justify-between items-center relative overflow-hidden">
+      <div class="relative z-10">
+        <h2 class="text-2xl font-bold mb-1 flex items-center gap-2"><i class="ti ti-file-invoice"></i> สร้างใบสั่งซื้อ (Purchase Order)</h2>
+        <p class="text-blue-100 text-sm">เปลี่ยนคำขอซื้อ (PR) ที่อนุมัติแล้ว ให้เป็นใบสั่งซื้อส่งให้ Vendor</p>
+      </div>
+      <i class="ti ti-receipt text-8xl absolute -right-4 -bottom-4 text-white/10 rotate-12"></i>
+    </div>
+    ${content}
+  </div>`; 
 }
 
 function processCreatePO() {
@@ -319,11 +346,10 @@ function processCreatePO() {
     
     if (res.status === 'success') {
       toast(res.message, 'success');
-      // ซิงค์ข้อมูลล่าสุดจากเซิร์ฟเวอร์
       const ref = await callAPI({ action: 'getData' }, "อัปเดตข้อมูล...");
       if (ref.status === 'success') {
         prDB = ref.prs || [];
-        go('po'); // รีเฟรชหน้าเพื่ออัปเดตรายการที่หายไป
+        go('po'); 
       }
     } else {
       toast(res.message, 'error');
@@ -331,7 +357,6 @@ function processCreatePO() {
   });
 }
 
-// ----------------------------------------------------
 function pageReceive() { 
   return `<div class="animate-slide-up space-y-6"><div class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl shadow-lg p-6 text-white flex justify-between items-center relative overflow-hidden"><div class="relative z-10"><h2 class="text-2xl font-bold mb-1 flex items-center gap-2"><i class="ti ti-package"></i> บันทึกรับสินค้า (Goods Receipt)</h2><p class="text-emerald-100 text-sm">ตรวจสอบรายการสินค้าที่นำส่งและรับเข้าคลัง</p></div><i class="ti ti-truck-loading text-8xl absolute -right-4 -bottom-4 text-white/10 -rotate-12"></i></div><div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center py-16"><div class="inline-flex items-center justify-center w-24 h-24 bg-teal-50 text-teal-500 rounded-full mb-4 animate-bounce"><i class="ti ti-barcode text-5xl"></i></div><h3 class="text-xl font-bold text-gray-800">แสกนบาร์โค้ด / กรอกเลข PO</h3><p class="text-gray-500 mt-2 mb-6 max-w-sm mx-auto">ฟังก์ชันนี้จะเชื่อมต่อกับระบบ Stock ในเฟสถัดไป</p><div class="flex max-w-md mx-auto gap-2"><input type="text" placeholder="ระบุเลขที่ PO" class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 outline-none focus:border-teal-500"><button onclick="toast('ค้นหาข้อมูล...', 'info')" class="bg-teal-600 text-white px-6 py-3 rounded-xl font-medium shadow-md hover:bg-teal-700 transition">ค้นหา</button></div></div></div>`; 
 }
