@@ -281,44 +281,29 @@ function pageTracking() {
 // ----------------------------------------------------
 // ระบบใบสั่งซื้อ (PO) อัปเดตใหม่เชื่อมหลังบ้าน
 // ----------------------------------------------------
-function pagePO() { 
-  const approvedPRs = prDB.filter(r => r.status === 'approved');
-  
-  let content = '';
-  if(approvedPRs.length === 0) {
-    content = `<div class="bg-white rounded-2xl p-12 text-center border border-dashed border-gray-200"><div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4"><i class="ti ti-file-x text-4xl text-gray-400"></i></div><h3 class="text-lg font-bold text-gray-700">ไม่มีรายการพร้อมออก PO</h3><p class="text-gray-500 mt-1">ต้องมีใบ PR ที่ผ่านการอนุมัติแล้ว จึงจะสามารถสร้างใบสั่งซื้อได้</p></div>`;
-  } else {
-    content = `<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-      <p class="text-sm font-medium text-gray-500 mb-4">เลือก PR ที่อนุมัติแล้วเพื่อดำเนินการสร้าง PO</p>
-      <div class="space-y-3 mb-6">
-        ${approvedPRs.map(r => `
-          <label class="flex items-center gap-4 p-4 border border-gray-100 rounded-xl bg-gray-50 hover:bg-indigo-50 hover:border-indigo-200 cursor-pointer transition group">
-            <input type="checkbox" class="po-checkbox w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500" value="${r.id}">
-            <div class="flex-1">
-              <div class="flex justify-between">
-                <span class="font-bold text-indigo-700 group-hover:text-indigo-800">${r.id}</span>
-                <span class="font-bold text-gray-800">฿${N(r.total)}</span>
-              </div>
-              <div class="text-sm text-gray-600 mt-1">${r.items[0].name} ${r.items.length > 1 ? `(+${r.items.length - 1} รายการ)` : ''} | <span class="text-xs text-gray-400">แผนก: ${r.dept}</span></div>
-            </div>
-          </label>
-        `).join('')}
-      </div>
-      <button onclick="processCreatePO()" class="w-full bg-indigo-600 text-white font-medium rounded-xl py-3 shadow-md hover:bg-indigo-700 transition flex items-center justify-center gap-2"><i class="ti ti-file-export"></i> สร้างเอกสาร PO</button>
-    </div>`;
+function processCreatePO() {
+  const checkboxes = document.querySelectorAll('.po-checkbox:checked');
+  const selectedPRs = Array.from(checkboxes).map(cb => cb.value);
+
+  if (selectedPRs.length === 0) {
+    return toast('กรุณาเลือก PR อย่างน้อย 1 รายการ', 'warning');
   }
 
-  return `
-  <div class="animate-slide-up space-y-6">
-    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-lg p-6 text-white flex justify-between items-center relative overflow-hidden">
-      <div class="relative z-10">
-        <h2 class="text-2xl font-bold mb-1 flex items-center gap-2"><i class="ti ti-file-invoice"></i> สร้างใบสั่งซื้อ (Purchase Order)</h2>
-        <p class="text-blue-100 text-sm">เปลี่ยนคำขอซื้อ (PR) ที่อนุมัติแล้ว ให้เป็นใบสั่งซื้อส่งให้ Vendor</p>
-      </div>
-      <i class="ti ti-receipt text-8xl absolute -right-4 -bottom-4 text-white/10 rotate-12"></i>
-    </div>
-    ${content}
-  </div>`; 
+  showConfirm('สร้างใบสั่งซื้อ (PO)?', `ระบบจะนำ PR จำนวน ${selectedPRs.length} รายการไปสร้างเป็นเอกสาร PO ใหม่`, 'primary', async () => {
+    const res = await callAPI({ action: 'createPO', prIds: selectedPRs }, "กำลังสร้างใบสั่งซื้อ...");
+    
+    if (res.status === 'success') {
+      toast(res.message, 'success');
+      // ซิงค์ข้อมูลล่าสุดจากเซิร์ฟเวอร์
+      const ref = await callAPI({ action: 'getData' }, "อัปเดตข้อมูล...");
+      if (ref.status === 'success') {
+        prDB = ref.prs || [];
+        go('po'); // รีเฟรชหน้าเพื่ออัปเดตรายการที่หายไป
+      }
+    } else {
+      toast(res.message, 'error');
+    }
+  });
 }
 
 function processCreatePO() {
