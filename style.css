@@ -1,28 +1,19 @@
-/* Custom Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
-/* นำลูกศรขึ้นลงออกจาก input type=number */
-input[type=number]::-webkit-inner-spin-button, 
-input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-
-/* Loading Animation */
 #loading-overlay { backdrop-filter: blur(4px); }
 .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+.dark .loader { border-color: #374151; border-top-color: #3b82f6; }
+
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes slideUpFade { 0% { opacity: 0; transform: translateY(15px); } 100% { opacity: 1; transform: translateY(0); } }
 
-/* Page Transition Animation */
-@keyframes slideUpFade { 
-  0% { opacity: 0; transform: translateY(15px); } 
-  100% { opacity: 1; transform: translateY(0); } 
-}
 .animate-slide-up { animation: slideUpFade 0.4s ease-out forwards; }
-
-/* Toast Animations */
 .toast-enter { transform: translateY(100%); opacity: 0; }
 .toast-active { transform: translateY(0); opacity: 1; }
 
-/* Modal Animations */
 .modal-backdrop-enter { opacity: 0; }
 .modal-backdrop-active { opacity: 1; }
 .modal-content-enter { transform: scale(0.95); opacity: 0; }
