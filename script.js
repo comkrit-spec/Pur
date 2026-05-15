@@ -17,36 +17,27 @@ function setupPWA() {
   };
   const link = document.createElement('link'); link.rel = 'manifest'; link.href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' })); document.head.appendChild(link);
 }
+setupPWA();
 
-function toggleTheme() {
-  sysConfig.theme = sysConfig.theme === 'light' ? 'dark' : 'light';
-  saveConfig();
-}
-
+function toggleTheme() { sysConfig.theme = sysConfig.theme === 'light' ? 'dark' : 'light'; saveConfig(); }
 function applyTheme() {
-  if (sysConfig.theme === 'dark') document.documentElement.classList.add('dark');
-  else document.documentElement.classList.remove('dark');
-  const appTitle = document.getElementById('app-main-title');
-  const appLogo = document.getElementById('app-logo');
-  if(appTitle) appTitle.textContent = sysConfig.appName;
-  if(appLogo) appLogo.src = sysConfig.logoUrl;
+  if (sysConfig.theme === 'dark') document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark');
+  const appTitle = document.getElementById('app-main-title'); const appLogo = document.getElementById('app-logo');
+  if(appTitle) appTitle.textContent = sysConfig.appName; if(appLogo) appLogo.src = sysConfig.logoUrl;
 }
-
 function saveConfig() { localStorage.setItem('sysConfig', JSON.stringify(sysConfig)); applyTheme(); }
+applyTheme();
 
 // =======================================================
 // 🔑 CORE VARIABLES & API
 // =======================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbyikX4QXmgD48zPt2lHlDh47C3sImq-T3rs_1ovYmgR9tmrDgtixu6wbVMueMdhoFdqGg/exec"; // 📌 อย่าลืมเปลี่ยนตรงนี้
+const API_URL = "https://script.google.com/macros/s/AKfycbwqjGS1NnVylaDqyaY3nntPBIwzr7gK2I_tK8Ox98N7gV_LefAFKCytwbl2evQuy0LaYQ/exec"; // 📌 เปลี่ยนตรงนี้ด้วย
 const API_KEY = "AH_ProCure_SecureKey_2026"; 
 const N = n => Number(n).toLocaleString('th-TH', {minimumFractionDigits:0, maximumFractionDigits:2});
 
 let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 let prDB = [], usersDB = [], vendorDB = [], budgetDB = [], catalogDB = [], poDB = [];
 let dashboardCharts = [];
-
-setupPWA();
-applyTheme();
 
 async function callAPI(payload, loadingMsg = "กำลังโหลด...") {
   showLoading(loadingMsg); payload.apiKey = API_KEY; 
@@ -58,20 +49,14 @@ async function callAPI(payload, loadingMsg = "กำลังโหลด...") {
 
 async function syncData() {
   const res = await callAPI({ action: 'getData' }, "ซิงค์ข้อมูลล่าสุด...");
-  if (res.status === 'success') { 
-    prDB = res.prs || []; usersDB = res.users || []; vendorDB = res.vendors || []; 
-    budgetDB = res.budgets || []; catalogDB = res.catalog || []; poDB = res.pos || []; 
-  }
+  if (res.status === 'success') { prDB = res.prs || []; usersDB = res.users || []; vendorDB = res.vendors || []; budgetDB = res.budgets || []; catalogDB = res.catalog || []; poDB = res.pos || []; }
 }
 
 async function checkAuth() {
   if (currentUser) {
-    document.getElementById('login-screen').classList.add('hidden');
-    document.getElementById('app-screen').classList.remove('hidden');
+    document.getElementById('login-screen').classList.add('hidden'); document.getElementById('app-screen').classList.remove('hidden');
     setTimeout(() => document.getElementById('app-screen').classList.remove('opacity-0'), 50);
-    document.getElementById('user-name-display').textContent = currentUser.name;
-    document.getElementById('user-avatar').textContent = currentUser.name.charAt(0);
-    document.getElementById('user-role-display').textContent = currentUser.role;
+    document.getElementById('user-name-display').textContent = currentUser.name; document.getElementById('user-avatar').textContent = currentUser.name.charAt(0); document.getElementById('user-role-display').textContent = currentUser.role;
     renderSidebar(); await syncData(); go('dashboard');
   } else { document.getElementById('login-screen').classList.remove('hidden'); document.getElementById('app-screen').classList.add('hidden'); }
 }
@@ -103,8 +88,7 @@ const menuConfig = [
 ];
 
 function renderSidebar() {
-  document.getElementById('sidebar-menu').innerHTML = menuConfig.filter(m => m.roles.includes(currentUser.role))
-    .map(m => `<button onclick="go('${m.id}')" id="nav-${m.id}" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"><i class="ti ${m.icon} text-lg"></i> ${m.label}</button>`).join('');
+  document.getElementById('sidebar-menu').innerHTML = menuConfig.filter(m => m.roles.includes(currentUser.role)).map(m => `<button onclick="go('${m.id}')" id="nav-${m.id}" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"><i class="ti ${m.icon} text-lg"></i> ${m.label}</button>`).join('');
 }
 
 function go(page) {
@@ -128,12 +112,10 @@ function go(page) {
 }
 
 function toast(msg, type='success', icon='ti-circle-check') {
-  const t = document.getElementById('toast');
-  const colors = { success: 'bg-gray-800 text-white', error: 'bg-danger-600 text-white', warning: 'bg-warning-500 text-white', info: 'bg-primary-600 text-white' };
+  const t = document.getElementById('toast'); const colors = { success: 'bg-gray-800 text-white', error: 'bg-danger-600 text-white', warning: 'bg-warning-500 text-white', info: 'bg-primary-600 text-white' };
   t.className = `fixed bottom-6 right-6 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-3 transition-all duration-300 z-[200] pointer-events-none ${colors[type]}`;
   document.getElementById('toast-icon').className = `ti ${icon} text-lg`; document.getElementById('toast-msg').textContent = msg;
-  t.classList.remove('toast-enter'); t.classList.add('toast-active');
-  setTimeout(() => { t.classList.remove('toast-active'); t.classList.add('toast-enter'); }, 3000);
+  t.classList.remove('toast-enter'); t.classList.add('toast-active'); setTimeout(() => { t.classList.remove('toast-active'); t.classList.add('toast-enter'); }, 3000);
 }
 
 function showLoading(text) { document.getElementById('loading-text').textContent = text; document.getElementById('loading-overlay').classList.remove('hidden'); }
@@ -198,23 +180,15 @@ function pageDashboard() {
 
 function renderDashboardCharts() {
   dashboardCharts.forEach(c => c.destroy()); dashboardCharts = [];
-  Chart.defaults.font.family = "'Prompt', sans-serif"; 
-  Chart.defaults.color = sysConfig.theme === 'dark' ? '#9ca3af' : '#6b7280';
-  
+  Chart.defaults.font.family = "'Prompt', sans-serif"; Chart.defaults.color = sysConfig.theme === 'dark' ? '#9ca3af' : '#6b7280';
   const ctxBudget = document.getElementById('budgetChart');
   if(ctxBudget && budgetDB.length > 0) {
-    dashboardCharts.push(new Chart(ctxBudget, {
-      type: 'doughnut', data: { labels: budgetDB.map(b=>`แผนก ${b.dept}`), datasets: [{ data: budgetDB.map(b=>b.used), backgroundColor: ['#3b82f6', '#10b981', '#f43f5e', '#f59e0b', '#8b5cf6'], borderWidth: 0, hoverOffset: 4 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } } }, cutout: '70%' }
-    }));
+    dashboardCharts.push(new Chart(ctxBudget, { type: 'doughnut', data: { labels: budgetDB.map(b=>`แผนก ${b.dept}`), datasets: [{ data: budgetDB.map(b=>b.used), backgroundColor: ['#3b82f6', '#10b981', '#f43f5e', '#f59e0b', '#8b5cf6'], borderWidth: 0, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } } }, cutout: '70%' } }));
   }
   const ctxSpend = document.getElementById('spendChart');
   if(ctxSpend) {
     const spendByDept = {}; prDB.filter(r => ['approved', 'po_issued', 'received'].includes(r.status)).forEach(r => { spendByDept[r.dept] = (spendByDept[r.dept] || 0) + Number(r.total); });
-    dashboardCharts.push(new Chart(ctxSpend, {
-      type: 'bar', data: { labels: Object.keys(spendByDept).length ? Object.keys(spendByDept) : ['ไม่มีข้อมูล'], datasets: [{ label: 'มูลค่า (฿)', data: Object.keys(spendByDept).length ? Object.values(spendByDept) : [0], backgroundColor: '#6366f1', borderRadius: 6 }] },
-      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: sysConfig.theme === 'dark' ? '#374151' : '#e5e7eb' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
-    }));
+    dashboardCharts.push(new Chart(ctxSpend, { type: 'bar', data: { labels: Object.keys(spendByDept).length ? Object.keys(spendByDept) : ['ไม่มีข้อมูล'], datasets: [{ label: 'มูลค่า (฿)', data: Object.keys(spendByDept).length ? Object.values(spendByDept) : [0], backgroundColor: '#6366f1', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: sysConfig.theme === 'dark' ? '#374151' : '#e5e7eb' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } } }));
   }
 }
 
@@ -242,14 +216,16 @@ function calculatePRTotal() {
 
 function pageCreatePR() {
   const userOpts = usersDB.map(u => `<option value="${u.name}">`).join('');
-  return `<div class="animate-slide-up space-y-6"><div class="grid grid-cols-1 xl:grid-cols-3 gap-6"><div class="xl:col-span-2 space-y-6"><div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6"><h3 class="font-semibold text-gray-800 dark:text-white mb-4 pb-3 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2"><i class="ti ti-file-info text-primary-600"></i> ข้อมูลทั่วไป</h3><div class="grid grid-cols-2 gap-5"><div><label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">ผู้ขอซื้อ</label><input type="text" id="pr-requester" list="user-list" class="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-white text-sm rounded-lg px-3 py-2 outline-none focus:border-primary-500" value="${currentUser.name}"><datalist id="user-list">${userOpts}</datalist></div><div><label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">แผนก</label><select id="pr-dept" class="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-white text-sm rounded-lg px-3 py-2 outline-none"><option>MT</option><option>IT</option><option>HR</option><option>Operation</option></select></div></div></div><div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6"><div class="flex justify-between items-end mb-4 pb-3 border-b border-gray-100 dark:border-gray-700"><h3 class="font-semibold text-gray-800 dark:text-white flex items-center gap-2"><i class="ti ti-list-details text-primary-600"></i> รายการสินค้า</h3><button onclick="addPRItem()" class="text-sm font-medium text-primary-600 bg-primary-50 dark:bg-primary-900/30 px-3 py-1.5 rounded-lg"><i class="ti ti-plus"></i> เพิ่ม</button></div><div id="pr-items-container" class="space-y-1"></div></div></div><div class="xl:col-span-1 space-y-6"><div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 sticky top-6"><h3 class="font-semibold text-gray-800 dark:text-white mb-4">สรุปยอดรวม</h3><div id="pr-total-box" class="bg-gray-50 dark:bg-gray-700 rounded-xl p-5 mb-5 border border-gray-100 dark:border-gray-600"></div><div class="mb-5"><label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">แนบใบเสนอราคา</label><div class="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-4 text-center hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="document.getElementById('pr-file-upload').click()"><i class="ti ti-upload text-2xl text-gray-400 mb-1"></i><p class="text-xs text-gray-500" id="file-name-display">คลิกเพื่ออัปโหลดไฟล์</p><input type="file" id="pr-file-upload" class="hidden" accept=".pdf,image/jpeg,image/png" onchange="handleFileSelect(event)"></div></div><button onclick="showConfirm('ส่งขออนุมัติ PR?', 'ตรวจสอบความถูกต้องก่อนยืนยัน', 'primary', submitNewPR)" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-xl py-3 shadow-md flex justify-center items-center gap-2"><i class="ti ti-cloud-upload"></i> ส่งขออนุมัติ</button></div></div></div></div>`;
+  return `<div class="animate-slide-up space-y-6"><div class="grid grid-cols-1 xl:grid-cols-3 gap-6"><div class="xl:col-span-2 space-y-6"><div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6"><h3 class="font-semibold text-gray-800 dark:text-white mb-4 pb-3 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2"><i class="ti ti-file-info text-primary-600"></i> ข้อมูลทั่วไป</h3><div class="grid grid-cols-1 md:grid-cols-3 gap-5"><div><label class="block mb-1.5 text-sm font-medium text-gray-500 dark:text-gray-400">ผู้บันทึก</label><input type="text" class="w-full bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300 text-sm rounded-lg px-3 py-2 cursor-not-allowed" value="${currentUser.name}" readonly></div><div><label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">ผู้ขอซื้อ <span class="text-red-500">*</span></label><input type="text" id="pr-requester" list="user-list" placeholder="พิมพ์ชื่อ..." class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-white text-sm rounded-lg px-3 py-2 outline-none focus:border-primary-500"><datalist id="user-list">${userOpts}</datalist></div><div><label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">แผนก</label><select id="pr-dept" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-white text-sm rounded-lg px-3 py-2 outline-none"><option>MT</option><option>IT</option><option>HR</option><option>Operation</option></select></div></div></div><div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6"><div class="flex justify-between items-end mb-4 pb-3 border-b border-gray-100 dark:border-gray-700"><h3 class="font-semibold text-gray-800 dark:text-white flex items-center gap-2"><i class="ti ti-list-details text-primary-600"></i> รายการสินค้า</h3><button onclick="addPRItem()" class="text-sm font-medium text-primary-600 bg-primary-50 dark:bg-primary-900/30 px-3 py-1.5 rounded-lg"><i class="ti ti-plus"></i> เพิ่ม</button></div><div id="pr-items-container" class="space-y-1"></div></div></div><div class="xl:col-span-1 space-y-6"><div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 sticky top-6"><h3 class="font-semibold text-gray-800 dark:text-white mb-4">สรุปยอดรวม</h3><div id="pr-total-box" class="bg-gray-50 dark:bg-gray-700 rounded-xl p-5 mb-5 border border-gray-100 dark:border-gray-600"></div><div class="mb-5"><label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">แนบใบเสนอราคา</label><div class="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-4 text-center hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="document.getElementById('pr-file-upload').click()"><i class="ti ti-upload text-2xl text-gray-400 mb-1"></i><p class="text-xs text-gray-500" id="file-name-display">คลิกเพื่ออัปโหลดไฟล์</p><input type="file" id="pr-file-upload" class="hidden" accept=".pdf,image/jpeg,image/png" onchange="handleFileSelect(event)"></div></div><button onclick="showConfirm('ส่งขออนุมัติ PR?', 'ตรวจสอบความถูกต้องก่อนยืนยัน', 'primary', submitNewPR)" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-xl py-3 shadow-md flex justify-center items-center gap-2"><i class="ti ti-cloud-upload"></i> ส่งขออนุมัติ</button></div></div></div></div>`;
 }
 
 async function submitNewPR() {
+  const reqName = document.getElementById('pr-requester').value.trim();
+  if (!reqName) return toast('กรุณาระบุชื่อผู้ขอซื้อ', 'warning');
   if (prItemsList.length === 0) return toast('ต้องมีสินค้าอย่างน้อย 1 รายการ', 'warning');
   for (let i = 0; i < prItemsList.length; i++) { if (!prItemsList[i].name.trim() || prItemsList[i].qty <= 0 || prItemsList[i].price < 0) return toast(`ข้อมูลรายการที่ ${i+1} ไม่สมบูรณ์`, 'error'); }
-  const newPR = { id: `PR${new Date().getFullYear().toString().slice(-2)}${String(prDB.length+1).padStart(4,'0')}`, date: new Date().toLocaleDateString('th-TH'), dept: document.getElementById('pr-dept').value, req: document.getElementById('pr-requester').value || currentUser.name, items: prItemsList, attachment: prAttachment, hasVat: sysConfig.vatEnabled, vatRate: sysConfig.vatRate };
-  const res = await callAPI({ action: 'createPR', prData: newPR }, "บันทึกข้อมูล...");
+  const newPR = { id: `PR${new Date().getFullYear().toString().slice(-2)}${String(prDB.length+1).padStart(4,'0')}`, date: new Date().toLocaleDateString('th-TH'), dept: document.getElementById('pr-dept').value, req: reqName, items: prItemsList, attachment: prAttachment, hasVat: sysConfig.vatEnabled, vatRate: sysConfig.vatRate };
+  const res = await callAPI({ action: 'createPR', prData: newPR, byUser: currentUser.username }, "บันทึกข้อมูล...");
   if (res.status === 'success') { toast('สร้าง PR สำเร็จ', 'success'); await syncData(); go('tracking'); } else { toast(res.message, 'error'); }
 }
 
@@ -326,50 +302,59 @@ function pageCatalog() { return `<div class="animate-slide-up space-y-6"><div cl
 
 function pageSettings() {
   const rColor = currentUser.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700';
+  const userTableHtml = usersDB.map(u => `<tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 border-b border-gray-50 dark:border-gray-700/50"><td class="p-3 font-medium text-gray-800 dark:text-gray-200">${u.name}</td><td class="p-3 text-gray-500 dark:text-gray-400">${u.username}</td><td class="p-3"><span class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded text-xs uppercase font-bold border border-gray-200 dark:border-gray-600">${u.role}</span></td><td class="p-3 flex gap-2"><button onclick="openUserModal('${u.username}')" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 transition p-1 rounded bg-blue-50 dark:bg-blue-900/30" title="แก้ไข"><i class="ti ti-edit"></i></button>${(u.username !== 'admin' && u.username !== currentUser.username) ? `<button onclick="deleteUser('${u.username}')" class="text-red-600 dark:text-red-400 hover:text-red-800 transition p-1 rounded bg-red-50 dark:bg-red-900/30" title="ลบผู้ใช้"><i class="ti ti-trash"></i></button>` : `<span class="w-7"></span>`}</td></tr>`).join('');
   return `
   <div class="max-w-4xl space-y-6 animate-slide-up pb-10">
-    <div class="flex justify-between items-center mb-6">
-      <h2 class="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2"><i class="ti ti-settings"></i> การตั้งค่าระบบ (ERP Control)</h2>
-      <button onclick="toggleTheme()" class="bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 px-4 py-2 rounded-xl text-sm font-medium shadow-md transition flex items-center gap-2"><i class="ti ti-${sysConfig.theme === 'dark' ? 'sun' : 'moon'}"></i> โหมดสว่าง/มืด</button>
-    </div>
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-      <div class="p-5 border-b border-gray-50 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900"><h3 class="font-bold text-gray-800 dark:text-white">ข้อมูลผู้ใช้งาน (Profile)</h3></div>
-      <div class="p-6 flex items-center gap-6"><div class="w-20 h-20 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center text-3xl font-bold">${currentUser.name.charAt(0)}</div><div><h4 class="text-xl font-bold dark:text-white">${currentUser.name}</h4><p class="text-gray-500 text-sm mb-2">${currentUser.username}</p><span class="px-3 py-1 rounded-full text-xs font-bold uppercase ${rColor}">${currentUser.role}</span></div></div>
-    </div>
+    <div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2"><i class="ti ti-settings"></i> การตั้งค่าระบบ (ERP Control)</h2><button onclick="toggleTheme()" class="bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 px-4 py-2 rounded-xl text-sm font-medium shadow-md transition flex items-center gap-2"><i class="ti ti-${sysConfig.theme === 'dark' ? 'sun' : 'moon'}"></i> โหมดสว่าง/มืด</button></div>
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden"><div class="p-5 border-b border-gray-50 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900"><h3 class="font-bold text-gray-800 dark:text-white">ข้อมูลผู้ใช้งาน (My Profile)</h3></div><div class="p-6 flex items-center gap-6"><div class="w-20 h-20 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center text-3xl font-bold">${currentUser.name.charAt(0)}</div><div><h4 class="text-xl font-bold dark:text-white">${currentUser.name}</h4><p class="text-gray-500 text-sm mb-2">${currentUser.username}</p><span class="px-3 py-1 rounded-full text-xs font-bold uppercase ${rColor}">${currentUser.role}</span></div></div></div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-        <div class="p-5 border-b border-gray-50 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900"><h3 class="font-bold text-gray-800 dark:text-white">การแสดงผล (Preferences)</h3></div>
-        <div class="p-6 space-y-4">
-          <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ชื่อระบบ</label><input type="text" id="cfg-app-name" value="${sysConfig.appName}" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 dark:text-white rounded-lg px-3 py-2 text-sm outline-none"></div>
-          <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ลิงก์โลโก้</label><input type="text" id="cfg-logo" value="${sysConfig.logoUrl}" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 dark:text-white rounded-lg px-3 py-2 text-sm outline-none"></div>
-          <div class="flex gap-4"><div class="flex-1"><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ใช้งาน VAT</label><select id="cfg-vat-en" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 dark:text-white rounded-lg px-3 py-2 text-sm outline-none"><option value="true" ${sysConfig.vatEnabled ? 'selected' : ''}>เปิดใช้งาน</option><option value="false" ${!sysConfig.vatEnabled ? 'selected' : ''}>ปิดใช้งาน</option></select></div><div class="w-24"><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">VAT (%)</label><input type="number" id="cfg-vat-rate" value="${sysConfig.vatRate}" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 dark:text-white rounded-lg px-3 py-2 text-sm outline-none"></div></div>
-          <button onclick="saveUIPrefs()" class="w-full bg-primary-600 text-white font-medium py-2 rounded-xl mt-2 hover:bg-primary-700 transition">บันทึกการตั้งค่า</button>
-        </div>
-      </div>
-      <div class="bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-100 dark:border-red-900/50 overflow-hidden h-fit">
-        <div class="p-5 border-b border-red-200/50 dark:border-red-900/50"><h3 class="font-bold text-red-800 dark:text-red-400 flex items-center gap-2"><i class="ti ti-alert-triangle"></i> Danger Zone</h3></div>
-        <div class="p-6">
-          <p class="text-xs text-red-600 dark:text-red-300 mb-4">รีเซ็ตข้อมูลทั้งหมดและสร้างฐานข้อมูลใหม่พร้อมกับตั้งค่าสิทธิ์ระดับ Enterprise (CEO, Director, Manager)</p>
-          <button onclick="generateMockData()" class="w-full bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2.5 rounded-xl shadow-sm transition">ดำเนินการรีเซ็ตฐานข้อมูล</button>
-        </div>
-      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden"><div class="p-5 border-b border-gray-50 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900"><h3 class="font-bold text-gray-800 dark:text-white">การแสดงผล (Preferences)</h3></div><div class="p-6 space-y-4"><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ชื่อระบบ</label><input type="text" id="cfg-app-name" value="${sysConfig.appName}" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 dark:text-white rounded-lg px-3 py-2 text-sm outline-none"></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ลิงก์โลโก้</label><input type="text" id="cfg-logo" value="${sysConfig.logoUrl}" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 dark:text-white rounded-lg px-3 py-2 text-sm outline-none"></div><div class="flex gap-4"><div class="flex-1"><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ใช้งาน VAT</label><select id="cfg-vat-en" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 dark:text-white rounded-lg px-3 py-2 text-sm outline-none"><option value="true" ${sysConfig.vatEnabled ? 'selected' : ''}>เปิดใช้งาน</option><option value="false" ${!sysConfig.vatEnabled ? 'selected' : ''}>ปิดใช้งาน</option></select></div><div class="w-24"><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">VAT (%)</label><input type="number" id="cfg-vat-rate" value="${sysConfig.vatRate}" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 dark:text-white rounded-lg px-3 py-2 text-sm outline-none"></div></div><button onclick="saveUIPrefs()" class="w-full bg-primary-600 text-white font-medium py-2 rounded-xl mt-2 hover:bg-primary-700 transition">บันทึกการตั้งค่า</button></div></div>
+      <div class="bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-100 dark:border-red-900/50 overflow-hidden h-fit"><div class="p-5 border-b border-red-200/50 dark:border-red-900/50"><h3 class="font-bold text-red-800 dark:text-red-400 flex items-center gap-2"><i class="ti ti-alert-triangle"></i> Danger Zone</h3></div><div class="p-6"><p class="text-xs text-red-600 dark:text-red-300 mb-4">รีเซ็ตข้อมูลทั้งหมดและสร้างฐานข้อมูลใหม่พร้อมกับตั้งค่าสิทธิ์ระดับ Enterprise (CEO, Director, Manager)</p><button onclick="generateMockData()" class="w-full bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2.5 rounded-xl shadow-sm transition">ดำเนินการรีเซ็ตฐานข้อมูล</button></div></div>
     </div>
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mt-6"><div class="p-5 border-b border-gray-50 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900"><h3 class="font-bold text-gray-800 dark:text-white"><i class="ti ti-users"></i> จัดการผู้ใช้งาน (User Management)</h3><button onclick="openUserModal()" class="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:bg-primary-700 transition flex items-center gap-1"><i class="ti ti-user-plus"></i> เพิ่มผู้ใช้ใหม่</button></div><div class="overflow-x-auto"><table class="min-w-full text-sm text-left"><thead class="bg-gray-50 dark:bg-gray-900"><th class="p-3 text-gray-500 dark:text-gray-400">ชื่อ-นามสกุล</th><th class="p-3 text-gray-500 dark:text-gray-400">Username</th><th class="p-3 text-gray-500 dark:text-gray-400">สิทธิ์ (Role)</th><th class="p-3 text-gray-500 dark:text-gray-400">จัดการ</th></thead><tbody class="divide-y divide-gray-50 dark:divide-gray-700">${userTableHtml}</tbody></table></div></div>
   </div>`;
 }
 
 function saveUIPrefs() {
-  sysConfig.appName = document.getElementById('cfg-app-name').value;
-  sysConfig.logoUrl = document.getElementById('cfg-logo').value;
-  sysConfig.vatEnabled = document.getElementById('cfg-vat-en').value === 'true';
-  sysConfig.vatRate = Number(document.getElementById('cfg-vat-rate').value);
+  sysConfig.appName = document.getElementById('cfg-app-name').value; sysConfig.logoUrl = document.getElementById('cfg-logo').value; sysConfig.vatEnabled = document.getElementById('cfg-vat-en').value === 'true'; sysConfig.vatRate = Number(document.getElementById('cfg-vat-rate').value);
   saveConfig(); toast('บันทึกสำเร็จ', 'success');
 }
 
 async function generateMockData() {
-  showConfirm('รีเซ็ตฐานข้อมูล?', 'ระบบจะลบข้อมูลเดิมทั้งหมดและปรับปรุงโครงสร้าง DB ใหม่ แน่ใจหรือไม่?', 'danger', async () => {
+  showConfirm('รีเซ็ตฐานข้อมูล?', 'ลบข้อมูลเดิมทั้งหมดและสร้าง DB ใหม่?', 'danger', async () => {
     const res = await callAPI({ action: 'initMockData' }, "ดำเนินการ...");
-    if (res.status === 'success') { toast(res.message, 'success'); setTimeout(() => { localStorage.removeItem('currentUser'); location.reload(); }, 1500); }
-    else { toast(res.message, 'error'); }
+    if (res.status === 'success') { toast(res.message, 'success'); setTimeout(() => { localStorage.removeItem('currentUser'); location.reload(); }, 1500); } else { toast(res.message, 'error'); }
+  });
+}
+
+function openUserModal(username = null) {
+  const modal = document.getElementById('user-modal'); const title = document.getElementById('user-modal-title'); const hint = document.getElementById('um-pass-hint');
+  if (username) {
+    const user = usersDB.find(u => u.username === username); title.innerHTML = `<i class="ti ti-user-edit text-primary-600"></i> แก้ไขผู้ใช้งาน`; hint.textContent = "(เว้นว่างหากไม่ต้องการเปลี่ยนรหัสผ่าน)";
+    document.getElementById('um-username').value = user.username; document.getElementById('um-username').disabled = true; document.getElementById('um-username').classList.add('bg-gray-100', 'cursor-not-allowed');
+    document.getElementById('um-name').value = user.name; document.getElementById('um-role').value = user.role;
+  } else {
+    title.innerHTML = `<i class="ti ti-user-plus text-primary-600"></i> เพิ่มผู้ใช้งาน`; hint.textContent = "(จำเป็นต้องกำหนดรหัสผ่าน)";
+    document.getElementById('um-username').value = ''; document.getElementById('um-username').disabled = false; document.getElementById('um-username').classList.remove('bg-gray-100', 'cursor-not-allowed');
+    document.getElementById('um-name').value = ''; document.getElementById('um-role').value = 'user';
+  }
+  document.getElementById('um-password').value = ''; modal.classList.remove('hidden');
+}
+
+function closeUserModal() { document.getElementById('user-modal').classList.add('hidden'); }
+
+async function submitUserForm() {
+  const data = { username: document.getElementById('um-username').value.trim(), name: document.getElementById('um-name').value.trim(), password: document.getElementById('um-password').value, role: document.getElementById('um-role').value };
+  if (!data.username || !data.name) return toast('กรุณากรอก Username และชื่อ', 'warning');
+  if (!document.getElementById('um-username').disabled && !data.password) return toast('ต้องกำหนดรหัสผ่าน', 'warning');
+  const res = await callAPI({ action: 'saveUser', userData: data, byUser: currentUser.username }, "กำลังบันทึก...");
+  if (res.status === 'success') { toast(res.message, 'success'); closeUserModal(); await syncData(); go('settings'); } else { toast(res.message, 'error'); }
+}
+
+function deleteUser(username) {
+  showConfirm('ลบผู้ใช้?', `ยืนยันการลบผู้ใช้ ${username}?`, 'danger', async () => {
+    const res = await callAPI({ action: 'deleteUser', targetUsername: username, byUser: currentUser.username }, "ลบข้อมูล...");
+    if (res.status === 'success') { toast(res.message, 'success'); await syncData(); go('settings'); } else { toast(res.message, 'error'); }
   });
 }
 
