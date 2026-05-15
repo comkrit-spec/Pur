@@ -15,18 +15,21 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
-  
   <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Prompt', 'sans-serif'] }, colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' }, success: { 100: '#dcfce7', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' }, warning: { 100: '#fef3c7', 500: '#f59e0b', 600: '#d97706' }, danger: { 50: '#fef2f2', 100: '#fee2e2', 600: '#dc2626', 700: '#b91c1c' } } } } }
+    tailwind.config = { 
+      darkMode: 'class',
+      theme: { extend: { fontFamily: { sans: ['Prompt', 'sans-serif'] }, colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' }, success: { 100: '#dcfce7', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' }, warning: { 100: '#fef3c7', 500: '#f59e0b', 600: '#d97706' }, danger: { 50: '#fef2f2', 100: '#fee2e2', 600: '#dc2626', 700: '#b91c1c' } } } } 
+    }
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans h-screen overflow-hidden flex relative">
+<body class="bg-gray-50 text-gray-800 font-sans h-screen overflow-hidden flex relative transition-colors duration-300">
 
-  <div id="loading-overlay" class="fixed inset-0 z-[100] bg-white/70 flex flex-col items-center justify-center hidden transition-opacity border">
+  <div id="loading-overlay" class="fixed inset-0 z-[100] bg-white/70 dark:bg-gray-900/80 flex flex-col items-center justify-center hidden transition-opacity">
     <div class="loader mb-4"></div>
     <div class="text-primary-600 font-semibold tracking-wide" id="loading-text">กำลังโหลดข้อมูล...</div>
   </div>
@@ -49,16 +52,21 @@
   </div>
 
   <div id="app-screen" class="flex w-full h-full hidden opacity-0 transition-opacity duration-500">
-    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm z-10 shrink-0">
-      <div class="h-16 flex items-center px-6 border-b border-gray-100"><i class="ti ti-droplet-filled text-2xl text-primary-600 mr-2"></i><h1 class="font-bold text-sm tracking-wide">AH Procurement</h1></div>
+    <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col shadow-sm z-10 shrink-0 transition-colors">
+      <div class="h-16 flex items-center px-6 border-b border-gray-100 dark:border-gray-700">
+        <img id="app-logo" src="https://cdn-icons-png.flaticon.com/512/3135/3135695.png" class="w-8 h-8 mr-2 object-contain">
+        <h1 id="app-main-title" class="font-bold text-sm tracking-wide dark:text-gray-200">AH Procurement</h1>
+      </div>
       <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1" id="sidebar-menu"></div>
-      <div class="p-4 border-t border-gray-100">
-        <div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center font-bold" id="user-avatar">U</div><div class="overflow-hidden"><p class="text-sm font-semibold truncate" id="user-name-display"></p><p class="text-[10px] uppercase font-bold text-primary-600 tracking-wider" id="user-role-display"></p></div></div>
-        <button onclick="handleLogout()" class="w-full flex justify-center items-center gap-2 text-sm text-danger-600 bg-danger-50 hover:bg-danger-100 py-2 rounded-lg font-medium transition"><i class="ti ti-logout"></i> ออกจากระบบ</button>
+      <div class="p-4 border-t border-gray-100 dark:border-gray-700">
+        <div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center font-bold" id="user-avatar">U</div><div class="overflow-hidden"><p class="text-sm font-semibold truncate dark:text-gray-200" id="user-name-display"></p><p class="text-[10px] uppercase font-bold text-primary-600 tracking-wider" id="user-role-display"></p></div></div>
+        <button onclick="handleLogout()" class="w-full flex justify-center items-center gap-2 text-sm text-danger-600 bg-danger-50 dark:bg-danger-900/30 hover:bg-danger-100 py-2 rounded-lg font-medium transition"><i class="ti ti-logout"></i> ออกจากระบบ</button>
       </div>
     </aside>
-    <main class="flex-1 flex flex-col h-screen min-w-0 bg-gray-50">
-      <header class="h-16 bg-white border-b border-gray-200 flex items-center px-8 shadow-sm shrink-0"><h2 class="text-xl font-semibold text-gray-800" id="page-title">Dashboard</h2></header>
+    <main class="flex-1 flex flex-col h-screen min-w-0 bg-gray-50 dark:bg-gray-900 transition-colors">
+      <header class="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center px-8 shadow-sm shrink-0 transition-colors">
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100" id="page-title">Dashboard</h2>
+      </header>
       <div class="flex-1 overflow-auto p-8" id="page-content"></div>
     </main>
   </div>
@@ -67,14 +75,14 @@
 
   <div id="custom-modal" class="fixed inset-0 z-[150] flex items-center justify-center hidden pointer-events-none">
     <div id="modal-backdrop" class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity duration-300 modal-backdrop-enter pointer-events-auto" onclick="closeModal()"></div>
-    <div id="modal-content" class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm mx-4 relative z-10 transition-all duration-300 modal-content-enter pointer-events-auto">
+    <div id="modal-content" class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 w-full max-w-sm mx-4 relative z-10 transition-all duration-300 modal-content-enter pointer-events-auto">
       <div class="text-center mb-6">
         <div id="modal-icon" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"></div>
-        <h3 class="text-xl font-bold text-gray-800" id="modal-title">ยืนยันการทำรายการ?</h3>
-        <p class="text-sm text-gray-500 mt-2" id="modal-desc"></p>
+        <h3 class="text-xl font-bold text-gray-800 dark:text-white" id="modal-title">ยืนยันการทำรายการ?</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2" id="modal-desc"></p>
       </div>
       <div class="flex gap-3 w-full">
-        <button onclick="closeModal()" class="flex-1 bg-gray-100 text-gray-700 font-medium py-2.5 rounded-xl hover:bg-gray-200 transition">ยกเลิก</button>
+        <button onclick="closeModal()" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium py-2.5 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition">ยกเลิก</button>
         <button id="modal-confirm-btn" class="flex-1 text-white font-medium py-2.5 rounded-xl shadow-md transition">ยืนยัน</button>
       </div>
     </div>
