@@ -97,6 +97,12 @@ function go(page) {
   const titles = { dashboard:'Dashboard', 'create-pr':'สร้างใบขอซื้อ (PR)', approve:'อนุมัติรายการ', po:'สร้างใบสั่งซื้อ (PO)', tracking:'ติดตามสถานะ', receive:'รับสินค้า (GR)', export:'Export รายงาน', vendors:'Vendor Master', budget:'ควบคุมงบประมาณ', catalog:'คลังสินค้า', settings:'ตั้งค่าระบบ (ERP Control)' };
   document.getElementById('page-title').textContent = titles[page] || page;
   
+  // 📌 ตรวจสอบหน้าจอ ถ้าเปิดในมือถือให้หุบเมนูอัตโนมัติเมื่อเปลี่ยนหน้า
+  if (window.innerWidth < 1024) {
+    document.getElementById('sidebar').classList.add('-translate-x-full');
+    document.getElementById('sidebar-overlay').classList.add('hidden');
+  }
+
   const c = document.getElementById('page-content');
   if(page==='dashboard') { c.innerHTML = pageDashboard(); setTimeout(renderDashboardCharts, 100); }
   else if(page==='create-pr') { c.innerHTML = pageCreatePR(); initPRForm(); }
@@ -203,28 +209,38 @@ function handleFileSelect(event) {
 function renderPRTable() {
   const container = document.getElementById('pr-items-container'); if(!container) return;
   container.innerHTML = prItemsList.map((it, i) => `
-    <div class="grid grid-cols-12 gap-3 items-center mb-3">
-      <div class="col-span-1 text-center text-sm font-medium text-gray-400">${i + 1}</div>
+    <div class="relative bg-gray-50 dark:bg-gray-800 md:bg-transparent p-4 md:p-0 rounded-xl md:rounded-none border border-gray-200 dark:border-gray-700 md:border-none mb-4 md:mb-3 flex flex-col md:grid md:grid-cols-12 gap-3 items-center group">
       
-      <div class="col-span-4">
-        <input type="text" class="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded-lg px-3 py-2 outline-none focus:border-primary-500" placeholder="ชื่อสินค้า" value="${it.name}" oninput="prItemsList[${i}].name=this.value">
+      <div class="hidden md:block col-span-1 text-center text-sm font-medium text-gray-400">${i + 1}</div>
+      
+      <div class="md:col-span-4 w-full relative">
+        <label class="md:hidden text-[10px] font-semibold text-gray-400 uppercase bg-gray-50 dark:bg-gray-800 absolute -top-2 left-2 px-1">ชื่อสินค้า</label>
+        <input type="text" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded-lg px-3 py-2 outline-none focus:border-primary-500" placeholder="ชื่อสินค้า/บริการ" value="${it.name}" oninput="prItemsList[${i}].name=this.value">
       </div>
       
-      <div class="col-span-2">
-        <input type="number" class="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded-lg px-3 py-2 outline-none focus:border-primary-500 text-center" placeholder="จำนวน" min="1" value="${it.qty}" oninput="prItemsList[${i}].qty=+this.value; calculatePRTotal()">
+      <div class="flex gap-3 w-full md:contents">
+        <div class="flex-1 md:col-span-2 relative">
+          <label class="md:hidden text-[10px] font-semibold text-gray-400 uppercase bg-gray-50 dark:bg-gray-800 absolute -top-2 left-2 px-1">จำนวน</label>
+          <input type="number" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded-lg px-3 py-2 outline-none focus:border-primary-500 text-center" placeholder="0" min="1" value="${it.qty}" oninput="prItemsList[${i}].qty=+this.value; calculatePRTotal()">
+        </div>
+        
+        <div class="flex-1 md:col-span-2 relative">
+          <label class="md:hidden text-[10px] font-semibold text-gray-400 uppercase bg-gray-50 dark:bg-gray-800 absolute -top-2 left-2 px-1">หน่วย</label>
+          <input type="text" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded-lg px-3 py-2 outline-none focus:border-primary-500 text-center" placeholder="เช่น ชิ้น, กล่อง" value="${it.unit}" oninput="prItemsList[${i}].unit=this.value">
+        </div>
       </div>
       
-      <div class="col-span-2">
-        <input type="text" class="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded-lg px-3 py-2 outline-none focus:border-primary-500 text-center" placeholder="หน่วย" value="${it.unit}" oninput="prItemsList[${i}].unit=this.value">
+      <div class="flex gap-3 w-full md:contents items-center mt-2 md:mt-0">
+        <div class="flex-1 md:col-span-2 relative">
+          <label class="md:hidden text-[10px] font-semibold text-gray-400 uppercase bg-gray-50 dark:bg-gray-800 absolute -top-2 left-2 px-1">ราคา/หน่วย (฿)</label>
+          <input type="number" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded-lg px-3 py-2 outline-none focus:border-primary-500 text-right" placeholder="0.00" min="0" value="${it.price}" oninput="prItemsList[${i}].price=+this.value; calculatePRTotal()">
+        </div>
+        
+        <div class="md:col-span-1 text-right md:text-center shrink-0">
+          <button onclick="removePRItem(${i})" class="text-red-400 hover:text-red-600 transition p-2 rounded-lg bg-red-50 md:bg-transparent dark:bg-red-900/20 dark:md:bg-transparent" title="ลบรายการ"><i class="ti ti-trash text-lg"></i><span class="md:hidden ml-1 text-sm font-medium">ลบ</span></button>
+        </div>
       </div>
       
-      <div class="col-span-2">
-        <input type="number" class="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded-lg px-3 py-2 outline-none focus:border-primary-500 text-right" placeholder="ราคา/หน่วย" min="0" value="${it.price}" oninput="prItemsList[${i}].price=+this.value; calculatePRTotal()">
-      </div>
-      
-      <div class="col-span-1 text-center">
-        <button onclick="removePRItem(${i})" class="text-gray-400 hover:text-danger-600 transition p-2 rounded-lg hover:bg-danger-50 dark:hover:bg-danger-900/30" title="ลบรายการ"><i class="ti ti-trash text-lg"></i></button>
-      </div>
     </div>`).join('');
   calculatePRTotal();
 }
