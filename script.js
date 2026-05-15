@@ -202,7 +202,30 @@ function handleFileSelect(event) {
 }
 function renderPRTable() {
   const container = document.getElementById('pr-items-container'); if(!container) return;
-  container.innerHTML = prItemsList.map((it, i) => `<div class="grid grid-cols-12 gap-3 items-center mb-3"><div class="col-span-1 text-center text-sm font-medium text-gray-400">${i + 1}</div><div class="col-span-4"><input type="text" class="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded-lg px-3 py-2 outline-none focus:border-primary-500" placeholder="ชื่อสินค้า" value="${it.name}" oninput="prItemsList[${i}].name=this.value"></div><div class="col-span-2"><input type="text" class="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded-lg px-3 py-2 outline-none focus:border-primary-500 text-center" placeholder="หน่วย" value="${it.unit}" oninput="prItemsList[${i}].unit=this.value"></div><div class="col-span-2"><input type="number" class="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded-lg px-3 py-2 outline-none focus:border-primary-500 text-center" min="1" value="${it.qty}" oninput="prItemsList[${i}].qty=+this.value; calculatePRTotal()"></div><div class="col-span-2"><input type="number" class="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded-lg px-3 py-2 outline-none focus:border-primary-500 text-right" min="0" value="${it.price}" oninput="prItemsList[${i}].price=+this.value; calculatePRTotal()"></div><div class="col-span-1 text-center"><button onclick="removePRItem(${i})" class="text-gray-400 hover:text-danger-600 transition p-2 rounded-lg hover:bg-danger-50 dark:hover:bg-danger-900/30"><i class="ti ti-trash text-lg"></i></button></div></div>`).join('');
+  container.innerHTML = prItemsList.map((it, i) => `
+    <div class="grid grid-cols-12 gap-3 items-center mb-3">
+      <div class="col-span-1 text-center text-sm font-medium text-gray-400">${i + 1}</div>
+      
+      <div class="col-span-4">
+        <input type="text" class="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded-lg px-3 py-2 outline-none focus:border-primary-500" placeholder="ชื่อสินค้า" value="${it.name}" oninput="prItemsList[${i}].name=this.value">
+      </div>
+      
+      <div class="col-span-2">
+        <input type="number" class="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded-lg px-3 py-2 outline-none focus:border-primary-500 text-center" placeholder="จำนวน" min="1" value="${it.qty}" oninput="prItemsList[${i}].qty=+this.value; calculatePRTotal()">
+      </div>
+      
+      <div class="col-span-2">
+        <input type="text" class="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded-lg px-3 py-2 outline-none focus:border-primary-500 text-center" placeholder="หน่วย" value="${it.unit}" oninput="prItemsList[${i}].unit=this.value">
+      </div>
+      
+      <div class="col-span-2">
+        <input type="number" class="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded-lg px-3 py-2 outline-none focus:border-primary-500 text-right" placeholder="ราคา/หน่วย" min="0" value="${it.price}" oninput="prItemsList[${i}].price=+this.value; calculatePRTotal()">
+      </div>
+      
+      <div class="col-span-1 text-center">
+        <button onclick="removePRItem(${i})" class="text-gray-400 hover:text-danger-600 transition p-2 rounded-lg hover:bg-danger-50 dark:hover:bg-danger-900/30" title="ลบรายการ"><i class="ti ti-trash text-lg"></i></button>
+      </div>
+    </div>`).join('');
   calculatePRTotal();
 }
 function addPRItem() { prItemsList.push({ name: '', unit: 'ชิ้น', qty: 1, price: 0 }); renderPRTable(); }
