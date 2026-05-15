@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>AH Procurement Cloud</title>
   
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -50,8 +50,11 @@
     </div>
   </div>
 
-  <div id="app-screen" class="flex w-full h-full hidden opacity-0 transition-opacity duration-500">
-    <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col shadow-sm z-10 shrink-0 transition-colors">
+  <div id="app-screen" class="flex w-full h-full hidden opacity-0 transition-opacity duration-500 relative">
+    
+    <div id="sidebar-overlay" class="fixed inset-0 bg-gray-900/50 z-20 hidden lg:hidden backdrop-blur-sm transition-opacity" onclick="toggleSidebar()"></div>
+
+    <aside id="sidebar" class="absolute lg:relative w-64 h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col shadow-2xl lg:shadow-sm z-30 shrink-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
       <div class="h-16 flex items-center px-6 border-b border-gray-100 dark:border-gray-700">
         <img id="app-logo" src="https://cdn-icons-png.flaticon.com/512/3135/3135695.png" class="w-8 h-8 mr-2 object-contain">
         <h1 id="app-main-title" class="font-bold text-sm tracking-wide dark:text-gray-200">AH Procurement</h1>
@@ -62,11 +65,15 @@
         <button onclick="handleLogout()" class="w-full flex justify-center items-center gap-2 text-sm text-danger-600 bg-danger-50 dark:bg-danger-900/30 hover:bg-danger-100 py-2 rounded-lg font-medium transition"><i class="ti ti-logout"></i> ออกจากระบบ</button>
       </div>
     </aside>
-    <main class="flex-1 flex flex-col h-screen min-w-0 bg-gray-50 dark:bg-gray-900 transition-colors">
-      <header class="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center px-8 shadow-sm shrink-0 transition-colors">
+
+    <main class="flex-1 flex flex-col h-screen min-w-0 bg-gray-50 dark:bg-gray-900 transition-colors w-full">
+      <header class="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center px-4 lg:px-8 shadow-sm shrink-0 transition-colors">
+        <button onclick="toggleSidebar()" class="lg:hidden text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 p-2 mr-3 rounded-lg transition">
+          <i class="ti ti-menu-2 text-2xl"></i>
+        </button>
         <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100" id="page-title">Dashboard</h2>
       </header>
-      <div class="flex-1 overflow-auto p-8" id="page-content"></div>
+      <div class="flex-1 overflow-auto p-4 md:p-6 lg:p-8" id="page-content"></div>
     </main>
   </div>
 
