@@ -106,7 +106,11 @@ function go(page) {
   document.getElementById('page-title').textContent = titles[page] || page;
   
   const c = document.getElementById('page-content');
-  if(page==='dashboard') c.innerHTML = pageDashboard();
+  if(page==='dashboard') { 
+    c.innerHTML = pageDashboard(); 
+    // 📌 เพิ่มบรรทัดนี้: เรียกฟังก์ชันวาดกราฟหลังจากเรนเดอร์ HTML เสร็จ
+    setTimeout(renderDashboardCharts, 100); 
+  }
   else if(page==='create-pr') { c.innerHTML = pageCreatePR(); initPRForm(); }
   else if(page==='approve') c.innerHTML = pageApprove();
   else if(page==='po') c.innerHTML = pagePO();
@@ -160,14 +164,11 @@ function sb(status) {
 // PAGE RENDERS & LOGIC
 // ==========================================
 function pageDashboard() {
-  // คำนวณสถิติต่างๆ
   const pending = prDB.filter(r => r.status === 'pending').length;
   const approved = prDB.filter(r => r.status === 'approved').length;
   const poIssued = prDB.filter(r => r.status === 'po_issued').length;
   const totalVal = prDB.reduce((sum, r) => sum + Number(r.total), 0);
-  
-  // ดึงรายการ PR ล่าสุด 5 รายการ
-  const recentPRs = [...prDB].reverse().slice(0, 5);
+  const recentPRs = [...prDB].reverse().slice(0, 5); // ดึง 5 รายการล่าสุด
 
   return `
   <div class="animate-slide-up space-y-6">
@@ -177,72 +178,96 @@ function pageDashboard() {
         <p class="text-sm text-gray-500 mt-1">ภาพรวมระบบจัดซื้อประจำวันที่ ${new Date().toLocaleDateString('th-TH')}</p>
       </div>
       <button onclick="go('create-pr')" class="bg-primary-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-md shadow-primary-200 hover:bg-primary-700 transition flex items-center gap-2">
-        <i class="ti ti-plus"></i> สร้างคำขอซื้อ (PR)
+        <i class="ti ti-plus"></i> สร้าง PR
       </button>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-gray-50 text-gray-600 flex items-center justify-center text-2xl"><i class="ti ti-files"></i></div>
-        <div><p class="text-xs text-gray-500 font-semibold uppercase">PR ทั้งหมด</p><h4 class="text-2xl font-bold text-gray-800">${prDB.length}</h4></div>
-      </div>
-      <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-warning-50 text-warning-600 flex items-center justify-center text-2xl"><i class="ti ti-clock"></i></div>
-        <div><p class="text-xs text-gray-500 font-semibold uppercase">รออนุมัติ</p><h4 class="text-2xl font-bold text-warning-600">${pending}</h4></div>
-      </div>
-      <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl"><i class="ti ti-file-export"></i></div>
-        <div><p class="text-xs text-gray-500 font-semibold uppercase">ออก PO แล้ว</p><h4 class="text-2xl font-bold text-indigo-600">${poIssued}</h4></div>
-      </div>
-      <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-success-50 text-success-600 flex items-center justify-center text-2xl"><i class="ti ti-cash"></i></div>
-        <div><p class="text-xs text-gray-500 font-semibold uppercase">มูลค่ารวม (฿)</p><h4 class="text-xl font-bold text-success-600">${N(totalVal)}</h4></div>
-      </div>
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4"><div class="w-12 h-12 rounded-xl bg-gray-50 text-gray-600 flex items-center justify-center text-2xl"><i class="ti ti-files"></i></div><div><p class="text-xs text-gray-500 font-semibold uppercase">PR ทั้งหมด</p><h4 class="text-2xl font-bold text-gray-800">${prDB.length}</h4></div></div>
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4"><div class="w-12 h-12 rounded-xl bg-warning-50 text-warning-600 flex items-center justify-center text-2xl"><i class="ti ti-clock"></i></div><div><p class="text-xs text-gray-500 font-semibold uppercase">รออนุมัติ</p><h4 class="text-2xl font-bold text-warning-600">${pending}</h4></div></div>
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4"><div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl"><i class="ti ti-file-export"></i></div><div><p class="text-xs text-gray-500 font-semibold uppercase">ออก PO แล้ว</p><h4 class="text-2xl font-bold text-indigo-600">${poIssued}</h4></div></div>
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4"><div class="w-12 h-12 rounded-xl bg-success-50 text-success-600 flex items-center justify-center text-2xl"><i class="ti ti-cash"></i></div><div><p class="text-xs text-gray-500 font-semibold uppercase">มูลค่ารวม (฿)</p><h4 class="text-xl font-bold text-success-600">${N(totalVal)}</h4></div></div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="p-5 border-b border-gray-50 flex justify-between items-center">
-          <h3 class="font-bold text-gray-800 flex items-center gap-2"><i class="ti ti-list text-primary-500"></i> รายการขอล่าสุด</h3>
-          <button onclick="go('tracking')" class="text-xs font-medium text-primary-600 hover:underline">ดูทั้งหมด</button>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      
+      <div class="xl:col-span-2 space-y-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div class="p-5 border-b border-gray-50 flex justify-between items-center"><h3 class="font-bold text-gray-800 flex items-center gap-2"><i class="ti ti-list text-primary-500"></i> รายการขอล่าสุด</h3><button onclick="go('tracking')" class="text-xs font-medium text-primary-600 hover:underline">ดูทั้งหมด</button></div>
+          <div class="overflow-x-auto"><table class="min-w-full text-left text-sm"><thead class="bg-gray-50/50 text-gray-500 text-xs"><tr><th class="p-4">เลขที่</th><th class="p-4">รายการ</th><th class="p-4 text-right">ยอดสุทธิ</th><th class="p-4 text-center">สถานะ</th></tr></thead><tbody class="divide-y divide-gray-50">
+            ${recentPRs.length > 0 ? recentPRs.map(r => `<tr class="hover:bg-gray-50 transition"><td class="p-4 font-semibold text-primary-600">${r.id}</td><td class="p-4"><p class="text-gray-800 font-medium truncate w-40 md:w-auto">${r.items[0].name}</p><p class="text-[10px] text-gray-400">${r.req}</p></td><td class="p-4 text-right font-medium text-gray-700">฿${N(r.total)}</td><td class="p-4 text-center">${sb(r.status)}</td></tr>`).join('') : `<tr><td colspan="4" class="p-8 text-center text-gray-400">ยังไม่มีรายการ</td></tr>`}
+          </tbody></table></div>
         </div>
-        <div class="overflow-x-auto">
-          <table class="min-w-full text-left text-sm">
-            <thead class="bg-gray-50/50 text-gray-500 text-xs">
-              <tr><th class="p-4">เลขที่</th><th class="p-4">รายการ</th><th class="p-4 text-right">ยอดสุทธิ</th><th class="p-4 text-center">สถานะ</th></tr>
-            </thead>
-            <tbody class="divide-y divide-gray-50">
-              ${recentPRs.length > 0 ? recentPRs.map(r => `
-                <tr class="hover:bg-gray-50 transition">
-                  <td class="p-4 font-semibold text-primary-600">${r.id}</td>
-                  <td class="p-4"><p class="text-gray-800 font-medium truncate w-40 md:w-auto">${r.items[0].name}</p><p class="text-[10px] text-gray-400">${r.req}</p></td>
-                  <td class="p-4 text-right font-medium text-gray-700">฿${N(r.total)}</td>
-                  <td class="p-4 text-center">${sb(r.status)}</td>
-                </tr>
-              `).join('') : `<tr><td colspan="4" class="p-8 text-center text-gray-400">ยังไม่มีรายการ</td></tr>`}
-            </tbody>
-          </table>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+          <h3 class="font-bold text-gray-800 flex items-center gap-2 mb-4"><i class="ti ti-chart-bar text-primary-500"></i> มูลค่าสั่งซื้อแยกตามแผนก</h3>
+          <div class="relative w-full h-64"><canvas id="spendChart"></canvas></div>
         </div>
       </div>
 
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="font-bold text-gray-800 flex items-center gap-2"><i class="ti ti-chart-pie text-rose-500"></i> งบประมาณ (Top 3)</h3>
+      <div class="xl:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col">
+        <h3 class="font-bold text-gray-800 flex items-center gap-2 mb-6"><i class="ti ti-chart-pie text-rose-500"></i> สัดส่วนการใช้งบประมาณ</h3>
+        <div class="relative w-full flex-1 min-h-[250px] flex items-center justify-center">
+          <canvas id="budgetChart"></canvas>
         </div>
-        <div class="space-y-5">
-          ${budgetDB.slice(0, 3).map(b => {
-            const pct = Math.round((b.used/b.budget)*100);
-            return `
-            <div>
-              <div class="flex justify-between text-xs mb-1.5 font-medium"><span class="text-gray-700">แผนก ${b.dept}</span><span class="${pct > 80 ? 'text-red-500' : 'text-emerald-500'}">${pct}%</span></div>
-              <div class="w-full bg-gray-100 rounded-full h-2"><div class="h-2 rounded-full ${pct > 80 ? 'bg-red-500' : 'bg-emerald-500'}" style="width: ${pct}%"></div></div>
-            </div>`;
-          }).join('')}
-        </div>
-        <button onclick="go('budget')" class="w-full mt-6 bg-gray-50 hover:bg-gray-100 text-gray-600 text-sm font-medium py-2 rounded-xl transition">ดูงบประมาณทั้งหมด</button>
+        <button onclick="go('budget')" class="w-full mt-6 bg-gray-50 hover:bg-gray-100 text-gray-600 text-sm font-medium py-2.5 rounded-xl transition border border-gray-200">ดูรายละเอียดงบประมาณ</button>
       </div>
+
     </div>
   </div>`;
+}
+// ตัวแปรเก็บกราฟเก่าไว้ทำลายทิ้ง ป้องกันปัญหากราฟซ้อนกันเวลาเปลี่ยนหน้าไปมา
+let dashboardCharts = []; 
+
+function renderDashboardCharts() {
+  // ทำลายกราฟเก่าทั้งหมดก่อนวาดใหม่
+  dashboardCharts.forEach(c => c.destroy());
+  dashboardCharts = [];
+
+  Chart.defaults.font.family = "'Prompt', sans-serif"; // บังคับให้กราฟใช้ฟอนต์ Prompt
+
+  // 1. วาดกราฟโดนัท (Budget)
+  const ctxBudget = document.getElementById('budgetChart');
+  if(ctxBudget && budgetDB.length > 0) {
+    const labels = budgetDB.map(b => `แผนก ${b.dept}`);
+    const data = budgetDB.map(b => b.used);
+    const bgColors = ['#3b82f6', '#10b981', '#f43f5e', '#f59e0b', '#8b5cf6'];
+    
+    const budgetChart = new Chart(ctxBudget, {
+      type: 'doughnut',
+      data: { labels: labels, datasets: [{ data: data, backgroundColor: bgColors, borderWidth: 0, hoverOffset: 4 }] },
+      options: { 
+        responsive: true, maintainAspectRatio: false, 
+        plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } } },
+        cutout: '70%' // ทำให้รูตรงกลางใหญ่ขึ้น ดูโมเดิร์น
+      }
+    });
+    dashboardCharts.push(budgetChart);
+  }
+
+  // 2. วาดกราฟแท่ง (Spend by Department)
+  const ctxSpend = document.getElementById('spendChart');
+  if(ctxSpend) {
+    // คำนวณยอด PR ที่อนุมัติ/ออก PO แล้ว แยกตามแผนก
+    const spendByDept = {};
+    prDB.filter(r => ['approved', 'po_issued', 'received'].includes(r.status)).forEach(r => {
+      spendByDept[r.dept] = (spendByDept[r.dept] || 0) + Number(r.total);
+    });
+
+    const labels = Object.keys(spendByDept).length > 0 ? Object.keys(spendByDept) : ['ยังไม่มีข้อมูล'];
+    const data = Object.keys(spendByDept).length > 0 ? Object.values(spendByDept) : [0];
+
+    const spendChart = new Chart(ctxSpend, {
+      type: 'bar',
+      data: { labels: labels, datasets: [{ label: 'มูลค่าสั่งซื้อ (บาท)', data: data, backgroundColor: '#6366f1', borderRadius: 6 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true, grid: { borderDash: [4, 4] } }, x: { grid: { display: false } } },
+        plugins: { legend: { display: false } }
+      }
+    });
+    dashboardCharts.push(spendChart);
+  }
 }
 
 // --- ฟังก์ชันสร้าง PR ---
