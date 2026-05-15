@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AH Procurement Cloud</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#2563eb">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Prompt', 'sans-serif'] }, colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' }, success: { 100: '#dcfce7', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' }, warning: { 100: '#fef3c7', 500: '#f59e0b', 600: '#d97706' }, danger: { 50: '#fef2f2', 100: '#fee2e2', 600: '#dc2626', 700: '#b91c1c' } } } } }
+  </script>
+</head>
+<body class="bg-mesh text-gray-800 font-sans h-screen overflow-hidden flex relative transition-colors duration-500">
+
+  <div id="loading-overlay" class="fixed inset-0 z-[100] bg-white/70 dark:bg-gray-900/80 flex flex-col items-center justify-center hidden transition-opacity">
+    <div class="loader mb-4"></div><div class="text-primary-600 font-semibold" id="loading-text">กำลังโหลด...</div>
+  </div>
+
+  <div id="login-screen" class="fixed inset-0 z-50 bg-gradient-to-br from-primary-600 to-indigo-900 flex items-center justify-center transition-opacity duration-500">
+    <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md mx-4">
+      <div class="text-center mb-8"><div class="w-16 h-16 bg-primary-100 text-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="ti ti-cloud-computing text-3xl"></i></div><h1 class="text-2xl font-bold">Asia Hydro Cloud</h1><p class="text-sm text-gray-500 mt-1">E-Procurement ERP</p></div>
+      <form onsubmit="handleLogin(event)"><div class="space-y-4"><div><label class="block text-sm font-medium mb-1">Username</label><input type="text" id="username" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary-500" required></div><div><label class="block text-sm font-medium mb-1">Password</label><input type="password" id="password" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary-500" required></div><button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-xl py-3 mt-4 transition shadow-md">เข้าสู่ระบบ</button></div></form>
+    </div>
+  </div>
+
+  <div id="app-screen" class="flex w-full h-full hidden opacity-0 transition-opacity duration-500 relative">
+    <div id="sidebar-overlay" class="fixed inset-0 bg-gray-900/50 z-20 hidden lg:hidden backdrop-blur-sm transition-opacity" onclick="toggleSidebar()"></div>
+    <aside id="sidebar" class="absolute lg:relative w-72 h-full glass-panel flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-30 shrink-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+      <div class="h-20 flex items-center px-6 border-b border-gray-100/50 dark:border-gray-700/50"><img id="app-logo" src="" class="w-8 h-8 mr-3 object-contain"><h1 id="app-main-title" class="font-bold text-sm tracking-wide dark:text-white">ERP System</h1></div>
+      <div class="flex-1 overflow-y-auto py-6 px-4 space-y-1.5" id="sidebar-menu"></div>
+      <div class="p-5 border-t border-gray-100/50 dark:border-gray-700/50">
+        <div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-indigo-600 text-white rounded-xl flex items-center justify-center font-bold shadow-md" id="user-avatar">U</div><div class="overflow-hidden"><p class="text-sm font-bold truncate dark:text-white" id="user-name-display"></p><p class="text-[10px] uppercase font-bold text-primary-500 tracking-wider" id="user-role-display"></p></div></div>
+        <button onclick="handleLogout()" class="w-full flex justify-center items-center gap-2 text-sm text-danger-600 bg-danger-50 dark:bg-danger-900/30 hover:bg-danger-100 py-2.5 rounded-xl font-medium transition"><i class="ti ti-logout"></i> ออกจากระบบ</button>
+      </div>
+    </aside>
+    <main class="flex-1 flex flex-col h-screen min-w-0 transition-colors w-full">
+      <header class="h-20 glass-panel border-b-0 flex items-center justify-between px-4 lg:px-8 shadow-sm shrink-0 transition-colors sticky top-0 z-20 rounded-b-3xl mx-2 mt-2">
+        <button onclick="toggleSidebar()" class="lg:hidden text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 p-2 mr-3 rounded-lg transition"><i class="ti ti-menu-2 text-2xl"></i></button>
+        <div><p class="text-xs uppercase tracking-[0.25em] text-primary-500 font-semibold">Asia Hydro ERP</p><h2 class="text-2xl font-bold text-gray-800 dark:text-white" id="page-title">Dashboard</h2></div><div class="hidden md:flex items-center gap-3"><button class="bg-white/70 dark:bg-gray-800/70 border border-white/50 px-4 py-2 rounded-2xl text-sm font-medium shadow-sm"><i class="ti ti-bell mr-1"></i> Notifications</button><button class="bg-gradient-to-r from-primary-600 to-indigo-600 text-white px-4 py-2 rounded-2xl text-sm font-semibold shadow-lg">+ New Request</button></div>
+      </header>
+      <div class="flex-1 overflow-auto p-4 md:p-6 lg:p-8 relative z-10" id="page-content"></div>
+    </main>
+  </div>
+
+  <div id="toast" class="fixed bottom-6 right-6 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-3 toast-enter z-[200] pointer-events-none transition-all duration-300"><i id="toast-icon" class="text-lg"></i><span id="toast-msg"></span></div>
+  <div id="custom-modal" class="fixed inset-0 z-[150] flex items-center justify-center hidden pointer-events-none"><div id="modal-backdrop" class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity duration-300 modal-backdrop-enter pointer-events-auto" onclick="closeModal()"></div><div id="modal-content" class="glass-panel dark:bg-gray-800 rounded-3xl shadow-2xl p-6 w-full max-w-sm mx-4 relative z-10 pointer-events-auto transition-all duration-300 modal-content-enter"><div class="text-center mb-6"><div id="modal-icon" class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl"></div><h3 class="text-xl font-bold text-gray-800 dark:text-white" id="modal-title"></h3><p class="text-sm text-gray-500 dark:text-gray-400 mt-2" id="modal-desc"></p></div><div class="flex gap-3 w-full"><button onclick="closeModal()" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold py-3 rounded-xl hover:bg-gray-200 transition">ยกเลิก</button><button id="modal-confirm-btn" class="flex-1 text-white font-bold py-3 rounded-xl shadow-md transition">ยืนยัน</button></div></div></div>
+  <div id="user-modal" class="fixed inset-0 z-[160] flex items-center justify-center hidden pointer-events-none"><div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm pointer-events-auto transition-opacity" onclick="closeUserModal()"></div><div class="glass-panel dark:bg-gray-800 rounded-3xl shadow-2xl p-6 w-full max-w-md mx-4 relative z-10 pointer-events-auto transition-all animate-slide-up"><div class="flex justify-between items-center mb-4 border-b border-gray-100 dark:border-gray-700 pb-3"><h3 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2" id="user-modal-title"><i class="ti ti-user-plus text-primary-600"></i> จัดการผู้ใช้งาน</h3><button onclick="closeUserModal()" class="text-gray-400 hover:text-danger-500 transition"><i class="ti ti-x text-xl"></i></button></div><div class="space-y-4"><div><label class="block text-sm font-medium mb-1 dark:text-gray-300">Username <span class="text-red-500">*</span></label><input type="text" id="um-username" class="w-full bg-white/50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 outline-none dark:text-white focus:border-primary-500"></div><div><label class="block text-sm font-medium mb-1 dark:text-gray-300">ชื่อ-นามสกุล <span class="text-red-500">*</span></label><input type="text" id="um-name" class="w-full bg-white/50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 outline-none dark:text-white focus:border-primary-500"></div><div><label class="block text-sm font-medium mb-1 dark:text-gray-300">รหัสผ่าน <span class="text-xs text-gray-400 font-normal" id="um-pass-hint"></span></label><input type="password" id="um-password" class="w-full bg-white/50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 outline-none dark:text-white focus:border-primary-500"></div><div><label class="block text-sm font-medium mb-1 dark:text-gray-300">สิทธิ์ (Role) <span class="text-red-500">*</span></label><select id="um-role" class="w-full bg-white/50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 outline-none dark:text-white focus:border-primary-500"><option value="user">User</option><option value="approver">Approver</option><option value="manager">Manager</option><option value="director">Director</option><option value="ceo">CEO</option><option value="admin">Admin</option></select></div><button onclick="submitUserForm()" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl py-3 mt-4 transition shadow-lg flex justify-center items-center gap-2"><i class="ti ti-device-floppy"></i> บันทึกข้อมูล</button></div></div></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
