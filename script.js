@@ -160,12 +160,89 @@ function sb(status) {
 // PAGE RENDERS & LOGIC
 // ==========================================
 function pageDashboard() {
+  // คำนวณสถิติต่างๆ
   const pending = prDB.filter(r => r.status === 'pending').length;
+  const approved = prDB.filter(r => r.status === 'approved').length;
+  const poIssued = prDB.filter(r => r.status === 'po_issued').length;
   const totalVal = prDB.reduce((sum, r) => sum + Number(r.total), 0);
-  return `<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 animate-slide-up">
-    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"><div class="text-gray-500 text-xs font-semibold uppercase mb-2">PR ทั้งหมด</div><div class="text-3xl font-bold text-gray-800">${prDB.length}</div></div>
-    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"><div class="text-gray-500 text-xs font-semibold uppercase mb-2">รออนุมัติ</div><div class="text-3xl font-bold text-warning-600">${pending}</div></div>
-    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"><div class="text-gray-500 text-xs font-semibold uppercase mb-2">มูลค่ารวมสะสม</div><div class="text-3xl font-bold text-success-600">฿${N(totalVal)}</div></div></div>`;
+  
+  // ดึงรายการ PR ล่าสุด 5 รายการ
+  const recentPRs = [...prDB].reverse().slice(0, 5);
+
+  return `
+  <div class="animate-slide-up space-y-6">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-2">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800">สวัสดี, ${currentUser.name} 👋</h2>
+        <p class="text-sm text-gray-500 mt-1">ภาพรวมระบบจัดซื้อประจำวันที่ ${new Date().toLocaleDateString('th-TH')}</p>
+      </div>
+      <button onclick="go('create-pr')" class="bg-primary-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-md shadow-primary-200 hover:bg-primary-700 transition flex items-center gap-2">
+        <i class="ti ti-plus"></i> สร้างคำขอซื้อ (PR)
+      </button>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-gray-50 text-gray-600 flex items-center justify-center text-2xl"><i class="ti ti-files"></i></div>
+        <div><p class="text-xs text-gray-500 font-semibold uppercase">PR ทั้งหมด</p><h4 class="text-2xl font-bold text-gray-800">${prDB.length}</h4></div>
+      </div>
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-warning-50 text-warning-600 flex items-center justify-center text-2xl"><i class="ti ti-clock"></i></div>
+        <div><p class="text-xs text-gray-500 font-semibold uppercase">รออนุมัติ</p><h4 class="text-2xl font-bold text-warning-600">${pending}</h4></div>
+      </div>
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl"><i class="ti ti-file-export"></i></div>
+        <div><p class="text-xs text-gray-500 font-semibold uppercase">ออก PO แล้ว</p><h4 class="text-2xl font-bold text-indigo-600">${poIssued}</h4></div>
+      </div>
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-success-50 text-success-600 flex items-center justify-center text-2xl"><i class="ti ti-cash"></i></div>
+        <div><p class="text-xs text-gray-500 font-semibold uppercase">มูลค่ารวม (฿)</p><h4 class="text-xl font-bold text-success-600">${N(totalVal)}</h4></div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-5 border-b border-gray-50 flex justify-between items-center">
+          <h3 class="font-bold text-gray-800 flex items-center gap-2"><i class="ti ti-list text-primary-500"></i> รายการขอล่าสุด</h3>
+          <button onclick="go('tracking')" class="text-xs font-medium text-primary-600 hover:underline">ดูทั้งหมด</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-left text-sm">
+            <thead class="bg-gray-50/50 text-gray-500 text-xs">
+              <tr><th class="p-4">เลขที่</th><th class="p-4">รายการ</th><th class="p-4 text-right">ยอดสุทธิ</th><th class="p-4 text-center">สถานะ</th></tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              ${recentPRs.length > 0 ? recentPRs.map(r => `
+                <tr class="hover:bg-gray-50 transition">
+                  <td class="p-4 font-semibold text-primary-600">${r.id}</td>
+                  <td class="p-4"><p class="text-gray-800 font-medium truncate w-40 md:w-auto">${r.items[0].name}</p><p class="text-[10px] text-gray-400">${r.req}</p></td>
+                  <td class="p-4 text-right font-medium text-gray-700">฿${N(r.total)}</td>
+                  <td class="p-4 text-center">${sb(r.status)}</td>
+                </tr>
+              `).join('') : `<tr><td colspan="4" class="p-8 text-center text-gray-400">ยังไม่มีรายการ</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-gray-800 flex items-center gap-2"><i class="ti ti-chart-pie text-rose-500"></i> งบประมาณ (Top 3)</h3>
+        </div>
+        <div class="space-y-5">
+          ${budgetDB.slice(0, 3).map(b => {
+            const pct = Math.round((b.used/b.budget)*100);
+            return `
+            <div>
+              <div class="flex justify-between text-xs mb-1.5 font-medium"><span class="text-gray-700">แผนก ${b.dept}</span><span class="${pct > 80 ? 'text-red-500' : 'text-emerald-500'}">${pct}%</span></div>
+              <div class="w-full bg-gray-100 rounded-full h-2"><div class="h-2 rounded-full ${pct > 80 ? 'bg-red-500' : 'bg-emerald-500'}" style="width: ${pct}%"></div></div>
+            </div>`;
+          }).join('')}
+        </div>
+        <button onclick="go('budget')" class="w-full mt-6 bg-gray-50 hover:bg-gray-100 text-gray-600 text-sm font-medium py-2 rounded-xl transition">ดูงบประมาณทั้งหมด</button>
+      </div>
+    </div>
+  </div>`;
 }
 
 // --- ฟังก์ชันสร้าง PR ---
@@ -397,8 +474,70 @@ function pageCatalog() {
 }
 
 function pageSettings() {
-  return `<div class="max-w-5xl space-y-6 animate-slide-up"><div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"><h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="ti ti-settings text-primary-600"></i> ตั้งค่าระบบ</h3>
-    <div onclick="generateMockData()" class="bg-white p-6 rounded-xl border border-gray-100 hover:border-primary-300 transition cursor-pointer flex items-center gap-4 w-fit"><div class="w-12 h-12 bg-primary-50 text-primary-600 rounded-xl flex items-center justify-center"><i class="ti ti-database text-2xl"></i></div><div><h4 class="font-bold text-gray-800 text-sm">รีเซ็ต Database</h4><p class="text-xs text-gray-500">รีเซ็ตและสร้างตารางพื้นฐานใหม่</p></div></div></div></div>`;
+  const roleColors = { admin: 'bg-purple-100 text-purple-700', approver: 'bg-blue-100 text-blue-700', user: 'bg-gray-100 text-gray-700' };
+  const rColor = roleColors[currentUser.role] || roleColors.user;
+
+  return `
+  <div class="max-w-4xl space-y-6 animate-slide-up">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><i class="ti ti-settings"></i> การตั้งค่าระบบ</h2>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="p-5 border-b border-gray-50 bg-gray-50/50"><h3 class="font-bold text-gray-800">ข้อมูลผู้ใช้งาน (Profile)</h3></div>
+      <div class="p-6 flex flex-col md:flex-row items-center gap-6">
+        <div class="w-24 h-24 bg-gradient-to-br from-primary-100 to-primary-200 text-primary-700 rounded-full flex items-center justify-center text-4xl font-bold shadow-inner">
+          ${currentUser.name.charAt(0)}
+        </div>
+        <div class="flex-1 text-center md:text-left">
+          <h4 class="text-xl font-bold text-gray-800">${currentUser.name}</h4>
+          <p class="text-gray-500 text-sm mb-2">ชื่อผู้ใช้: ${currentUser.username}</p>
+          <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${rColor}">${currentUser.role}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-5 border-b border-gray-50 bg-gray-50/50"><h3 class="font-bold text-gray-800">การเชื่อมต่อ API</h3></div>
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-sm text-gray-600">สถานะ Database</span>
+            <span class="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> เชื่อมต่อปกติ</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600">เวอร์ชันแอปพลิเคชัน</span>
+            <span class="text-sm font-medium text-gray-800">v2.1.0 (Cloud)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-5 border-b border-gray-50 bg-gray-50/50"><h3 class="font-bold text-gray-800">การแจ้งเตือน (Notifications)</h3></div>
+        <div class="p-6">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-green-50 text-green-500 rounded-xl flex items-center justify-center text-2xl"><i class="ti ti-brand-line"></i></div>
+            <div>
+              <h4 class="text-sm font-bold text-gray-800">LINE Notify</h4>
+              <p class="text-xs text-gray-500">แจ้งเตือนเมื่อมีการขอ/อนุมัติ PR</p>
+            </div>
+          </div>
+          <button onclick="toast('กรุณาตั้งค่า Token ในไฟล์ Code.gs', 'info')" class="w-full mt-4 bg-gray-50 border border-gray-200 text-gray-600 text-sm font-medium py-2 rounded-xl hover:bg-gray-100 transition">ตั้งค่า Token</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-red-50 rounded-2xl border border-red-100 overflow-hidden mt-8">
+      <div class="p-5 border-b border-red-200/50"><h3 class="font-bold text-red-800 flex items-center gap-2"><i class="ti ti-alert-triangle"></i> พื้นที่อันตราย (Danger Zone)</h3></div>
+      <div class="p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+          <h4 class="text-sm font-bold text-red-800">รีเซ็ตฐานข้อมูล (Reset Database)</h4>
+          <p class="text-xs text-red-600 mt-1 max-w-md">การกระทำนี้จะลบข้อมูล PR, PO และประวัติทั้งหมด และสร้างข้อมูลจำลอง (Mock Data) ขึ้นมาใหม่ ไม่สามารถกู้คืนได้</p>
+        </div>
+        <button onclick="generateMockData()" class="bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-5 py-2.5 rounded-xl shadow-sm transition whitespace-nowrap">
+          ดำเนินการรีเซ็ต
+        </button>
+      </div>
+    </div>
+  </div>`;
 }
 
 async function generateMockData() {
