@@ -17,7 +17,7 @@ setupPWA();
 // =======================================================
 // 🔑 CONFIGURATION 
 // =======================================================
-const API_URL = "วาง_WEB_APP_URL_ของคุณที่นี่"; // 📌 เปลี่ยนตรงนี้ด้วย
+const API_URL = "https://script.google.com/macros/s/AKfycbyZZoF6GIjO_lCEZZq5z-RxKzhhH-sTfw8WEoo-7irSEL6qtMiOlPbMdXnLjrhMPNIbdA/exec"; // 📌 เปลี่ยนตรงนี้ด้วย
 const API_KEY = "AH_ProCure_SecureKey_2026"; 
 const N = n => Number(n).toLocaleString('th-TH', {minimumFractionDigits:0, maximumFractionDigits:2});
 
